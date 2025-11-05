@@ -5,7 +5,7 @@ export interface SessionContext {
   repoPath: string;
   sessionRoot: string;
   worktreePath: string;
-  gitRef: string;
+  gitRef?: string;
   agentId: string;
   promptPath: string;
   prompt: PromptConfig;

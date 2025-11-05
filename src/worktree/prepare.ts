@@ -5,7 +5,7 @@ import { execa } from "execa";
 
 interface PrepareWorktreeArgs {
   repoPath: string;
-  gitRef: string;
+  gitRef?: string;
   sessionId: string;
 }
 
@@ -20,7 +20,12 @@ export async function prepareWorktree({
   const worktreePath = resolve(worktreeRoot, sessionId);
   await assertWorktreeDoesNotExist(worktreePath);
 
-  await execa("git", ["worktree", "add", "--force", worktreePath, gitRef], {
+  const worktreeArgs = ["worktree", "add", "--force", worktreePath];
+  if (gitRef) {
+    worktreeArgs.push(gitRef);
+  }
+
+  await execa("git", worktreeArgs, {
     cwd: repoPath,
   });
   return worktreePath;

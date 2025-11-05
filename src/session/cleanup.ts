@@ -2,7 +2,7 @@ import { SessionHookManager } from "../hooks/session-hooks.ts";
 import type { SessionContext } from "./context.ts";
 import type { StartOptions } from "./options.ts";
 
-const DEFAULT_HOOKS = ["prune-worktree"];
+const DEFAULT_HOOKS = ["remove-worktree"];
 
 export async function cleanupSession(
   context: SessionContext,

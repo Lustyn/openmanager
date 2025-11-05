@@ -33,7 +33,7 @@ export function createStartCommand(): Command {
     )
     .option(
       "-h, --post-session-hooks <hooks...>",
-      "Hooks to run after the agent finishes (e.g. create-patch create-pr prune-worktree)",
+      "Hooks to run after the agent finishes (e.g. create-patch create-pr remove-worktree)",
     )
     .option(
       "--patch-output-dir <path>",
@@ -74,7 +74,7 @@ export function createStartCommand(): Command {
 Examples:
   $ openmanager start --repo /path/to/repo --prompt-file prompt.txt
   $ openmanager start --prompt-text "Fix lint issues" --post-session-hooks create-patch
-  $ openmanager start --prompt-text "Ship feature" --post-session-hooks create-pr prune-worktree --pr-title "Add feature" --pr-auto-push
+  $ openmanager start --prompt-text "Ship feature" --post-session-hooks create-pr remove-worktree --pr-title "Add feature" --pr-auto-push
 `,
   );
 

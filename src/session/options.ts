@@ -15,11 +15,11 @@ export type PromptConfig =
   | { kind: "file"; path: string }
   | { kind: "text"; content: string };
 
-export const DEFAULT_POST_SESSION_HOOKS = ["create-patch", "prune-worktree"];
+export const DEFAULT_POST_SESSION_HOOKS = ["create-patch", "remove-worktree"];
 
 export interface StartOptions {
   repoPath: string;
-  gitRef: string;
+  gitRef?: string;
   agentId: string;
   prompt: PromptConfig;
   nonInteractive: boolean;
@@ -84,7 +84,7 @@ export async function parseStartOptions(
   const parsed = RawOptionsSchema.parse(raw);
 
   const repoPath = resolveRepoPath(parsed.repo);
-  const gitRef = parsed.ref ?? "HEAD";
+  const gitRef = parsed.ref;
   const agentId = parsed.agent ?? "opencode";
 
   ensurePromptChoice(parsed.promptFile, parsed.promptText);

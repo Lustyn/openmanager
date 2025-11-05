@@ -1,4 +1,4 @@
-import { access, constants, mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { basename, dirname, resolve } from "node:path";
 
 import { execa } from "execa";
@@ -38,7 +38,7 @@ export class SessionHookManager {
   constructor() {
     this.registerHook("create-patch", new CreatePatchHook());
     this.registerHook("create-pr", new CreatePrHook());
-    this.registerHook("prune-worktree", new PruneWorktreeHook());
+    this.registerHook("remove-worktree", new RemoveWorktreeHook());
   }
 
   registerHook(name: string, hook: SessionHook): void {
@@ -107,7 +107,7 @@ class CreatePatchHook implements SessionHook {
       patchOptions.patchFileName ?? `session-${context.sessionId}.patch`;
 
     // First, add all untracked files to the index temporarily
-    await execa("git", ["add", "-N", "."], {
+    await execa("git", ["add", "."], {
       cwd: worktreePath,
     });
 
@@ -116,11 +116,6 @@ class CreatePatchHook implements SessionHook {
       cwd: worktreePath,
     });
     const diff = diffResult.stdout.trim();
-
-    // Reset the index to remove intent-to-add entries
-    await execa("git", ["reset", "--mixed"], {
-      cwd: worktreePath,
-    });
 
     if (!diff) {
       return {
@@ -145,7 +140,7 @@ class CreatePatchHook implements SessionHook {
         const baseName = basename(patchFileName, ".patch");
         basePatchPath = resolve(
           outputDir,
-          `${baseName}-vs-${sanitizeRef(context.gitRef)}.patch`,
+          `${baseName}-vs-${sanitizeRef(context.gitRef ?? "HEAD")}.patch`,
         );
         await writeFile(basePatchPath, `${baseDiff}\n`, "utf8");
       }
@@ -227,31 +222,19 @@ class CreatePrHook implements SessionHook {
   }
 }
 
-class PruneWorktreeHook implements SessionHook {
-  readonly name = "prune-worktree";
+class RemoveWorktreeHook implements SessionHook {
+  readonly name = "remove-worktree";
 
   async execute(context: SessionContext): Promise<HookResult> {
     const { repoPath, worktreePath } = context;
 
-    try {
-      await access(worktreePath, constants.F_OK);
-    } catch {
-      // Worktree already gone; prune references and exit gracefully.
-      await execa("git", ["worktree", "prune"], { cwd: repoPath });
-      return {
-        success: true,
-        message: `Worktree '${worktreePath}' already removed. Pruned stale references.`,
-      };
-    }
-
     await execa("git", ["worktree", "remove", "--force", worktreePath], {
       cwd: repoPath,
     });
-    await execa("git", ["worktree", "prune"], { cwd: repoPath });
 
     return {
       success: true,
-      message: `Worktree '${worktreePath}' removed and references pruned.`,
+      message: `Worktree '${worktreePath}' removed.`,
     };
   }
 }
