@@ -15,7 +15,8 @@
     "dev": "tsx src/cli.ts",
     "lint": "eslint \"src/**/*.ts\"",
     "prepare": "pnpm run build",
-    "test": "vitest"
+    "test": "vitest",
+    "test:opencode": "docker build -f docker/Dockerfile.opencode -t opencode-test . && docker run --rm opencode-test --help"
   },
   "keywords": [
     "cli",

@@ -19,7 +19,7 @@ export async function buildCli(program = new Command()): Promise<Command> {
   return program;
 }
 
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, "/")}`) {
   const program = await buildCli();
   program.parse(process.argv);
 }
