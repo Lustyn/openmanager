@@ -16,17 +16,23 @@ export function createStartCommand(): Command {
     .option("--ref <git-ref>", "Git ref to base the session on", "HEAD")
     .option("-a, --agent <agent-id>", "Agent provider identifier", "opencode")
     .option(
-      "--prompt-file <path>",
+      "-f, --prompt-file <path>",
       "Path to a file containing the initial prompt",
     )
-    .option("--prompt-text <text>", "Inline text to use as the initial prompt")
     .option(
-      "--include-local-changes",
+      "-t, --prompt-text <text>",
+      "Inline text to use as the initial prompt",
+    )
+    .option(
+      "-i, --include-local-changes",
       "Copy current uncommitted changes into the session worktree",
     )
-    .option("--non-interactive", "Skip automatic terminal attach after launch")
     .option(
-      "--post-session-hooks <hooks...>",
+      "-n, --non-interactive",
+      "Skip automatic terminal attach after launch",
+    )
+    .option(
+      "-h, --post-session-hooks <hooks...>",
       "Hooks to run after the agent finishes (e.g. create-patch create-pr prune-worktree)",
     )
     .option(
@@ -38,16 +44,19 @@ export function createStartCommand(): Command {
       "--patch-include-base-diff",
       "Also emit a patch against the original git ref",
     )
-    .option("--pr-title <title>", "Title to use for the generated PR commit")
     .option(
-      "--pr-description <description>",
+      "-T, --pr-title <title>",
+      "Title to use for the generated PR commit",
+    )
+    .option(
+      "-D, --pr-description <description>",
       "Description/body to include in the generated PR commit",
     )
     .option(
       "--pr-branch-prefix <prefix>",
       "Prefix to use when naming the generated PR branch (default openmanager/session)",
     )
-    .option("--pr-auto-push", "Push the generated PR branch to origin")
+    .option("-P, --pr-auto-push", "Push the generated PR branch to origin")
     .action(async (rawOptions: Record<string, unknown>) => {
       try {
         const options = await parseStartOptions(rawOptions);
