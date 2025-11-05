@@ -61,9 +61,8 @@ export async function launchAgentContainer({
     "-e",
     `OPENMANAGER_PROMPT_FILE=${promptTargetPath}`,
     OPENCODE_IMAGE,
-    "-p",
+    "run",
     await readFile(session.promptPath, "utf8"),
-    WORKTREE_TARGET,
   ];
 
   const { stdout } = await execa("docker", runArgs, { cwd: PROJECT_ROOT });
