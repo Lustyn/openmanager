@@ -106,10 +106,21 @@ class CreatePatchHook implements SessionHook {
     const patchFileName =
       patchOptions.patchFileName ?? `session-${context.sessionId}.patch`;
 
+    // First, add all untracked files to the index temporarily
+    await execa("git", ["add", "-N", "."], {
+      cwd: worktreePath,
+    });
+
+    // Get diff including both staged and unstaged changes
     const diffResult = await execa("git", ["diff", "--binary", "HEAD"], {
       cwd: worktreePath,
     });
     const diff = diffResult.stdout.trim();
+
+    // Reset the index to remove intent-to-add entries
+    await execa("git", ["reset"], {
+      cwd: worktreePath,
+    });
 
     if (!diff) {
       return {
