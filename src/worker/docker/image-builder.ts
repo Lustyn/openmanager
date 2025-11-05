@@ -27,10 +27,7 @@ export async function ensureAgentImage(
   const dockerfileContent = `${instructions.join("\n")}\n`;
   const imageTag = computeImageTag(baseImage, customSteps);
 
-  console.log("Ensuring custom image built", imageTag, instructions);
-
   if (await imageExists(imageTag)) {
-    console.log("Custom image already built");
     return imageTag;
   }
 
@@ -40,9 +37,7 @@ export async function ensureAgentImage(
 }
 
 async function ensureDefaultImageBuilt(): Promise<void> {
-  console.log("Ensuring default image built");
   if (await imageExists(DEFAULT_IMAGE)) {
-    console.log("Default image already built");
     return;
   }
 
