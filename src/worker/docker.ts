@@ -36,8 +36,6 @@ export async function launchAgentContainer({
   const promptFileName = basename(session.promptPath);
   const promptTargetPath = `${PROMPT_TARGET_DIR}/${promptFileName}`;
 
-  const promptContent = await readFile(session.promptPath, "utf8");
-
   const runArgs = [
     "run",
     "--detach",
@@ -63,8 +61,9 @@ export async function launchAgentContainer({
     "-e",
     `OPENMANAGER_PROMPT_FILE=${promptTargetPath}`,
     OPENCODE_IMAGE,
-    "run",
-    promptContent,
+    "-p",
+    await readFile(session.promptPath, "utf8"),
+    WORKTREE_TARGET,
   ];
 
   const { stdout } = await execa("docker", runArgs, { cwd: PROJECT_ROOT });
