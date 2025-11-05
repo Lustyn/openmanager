@@ -5,6 +5,11 @@ import { cwd } from "node:process";
 import { z } from "zod";
 
 import type { PatchOptions, PrOptions } from "../hooks/session-hooks.ts";
+import {
+  loadSessionConfig,
+  type DockerConfig,
+  type HookInvocation,
+} from "../config/session-config.ts";
 
 export type PromptConfig =
   | { kind: "file"; path: string }
@@ -20,6 +25,8 @@ export interface StartOptions {
   nonInteractive: boolean;
   includeLocalChanges: boolean;
   postSessionHooks: string[];
+  preSessionHooks: HookInvocation[];
+  dockerConfig?: DockerConfig;
   patchOptions?: PatchOptions;
   prOptions?: PrOptions;
 }
@@ -82,6 +89,10 @@ export async function parseStartOptions(
 
   ensurePromptChoice(parsed.promptFile, parsed.promptText);
 
+  const sessionConfig = await loadSessionConfig(repoPath);
+  const preSessionHooks = sessionConfig.preSessionHooks ?? [];
+  const dockerConfig = sessionConfig.docker;
+
   const patchOptions: PatchOptions | undefined =
     parsed.patchOutputDir || parsed.patchFileName || parsed.patchIncludeBaseDiff
       ? {
@@ -122,6 +133,8 @@ export async function parseStartOptions(
       nonInteractive: Boolean(parsed.nonInteractive),
       includeLocalChanges: Boolean(parsed.includeLocalChanges),
       postSessionHooks,
+      preSessionHooks,
+      dockerConfig,
       patchOptions,
       prOptions,
     };
@@ -135,6 +148,8 @@ export async function parseStartOptions(
     nonInteractive: Boolean(parsed.nonInteractive),
     includeLocalChanges: Boolean(parsed.includeLocalChanges),
     postSessionHooks,
+    preSessionHooks,
+    dockerConfig,
     patchOptions,
     prOptions,
   };

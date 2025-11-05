@@ -9,4 +9,5 @@ export interface SessionContext {
   agentId: string;
   promptPath: string;
   prompt: PromptConfig;
+  dockerImage?: string;
 }

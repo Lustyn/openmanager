@@ -1,40 +1,40 @@
 import { execa } from "execa";
-import { basename, dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { basename, dirname } from "node:path";
 import { readFile } from "node:fs/promises";
 
 import type { SessionContext } from "../session/context.ts";
+import {
+  DEFAULT_IMAGE,
+  PROMPT_TARGET_DIR,
+  PROJECT_ROOT,
+  WORKTREE_TARGET,
+} from "./docker/shared.ts";
 
 interface LaunchAgentArgs {
   session: SessionContext;
   nonInteractive: boolean;
+  image?: string;
 }
 
 interface LaunchResult {
   containerId: string;
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const PROJECT_ROOT = resolve(__dirname, "../../");
-const DOCKERFILE_PATH = resolve(PROJECT_ROOT, "docker", "Dockerfile.opencode");
-const OPENCODE_IMAGE = "openmanager/opencode:latest";
-const WORKTREE_TARGET = "/openmanager/worktree";
-const PROMPT_TARGET_DIR = "/openmanager/prompt";
-
 export async function launchAgentContainer({
   session,
+  image,
 }: LaunchAgentArgs): Promise<LaunchResult> {
-  await ensureImageBuilt();
-
   if (!session.worktreePath) {
     throw new Error("Session worktree path is not set.");
   }
 
+  const resolvedImage = image ?? DEFAULT_IMAGE;
   const containerName = `openmanager-session-${session.sessionId}`;
   const promptDir = dirname(session.promptPath);
   const promptFileName = basename(session.promptPath);
   const promptTargetPath = `${PROMPT_TARGET_DIR}/${promptFileName}`;
+
+  const promptContent = (await readFile(session.promptPath, "utf8")).trim();
 
   const runArgs = [
     "run",
@@ -60,29 +60,14 @@ export async function launchAgentContainer({
     `OPENMANAGER_WORKTREE=${WORKTREE_TARGET}`,
     "-e",
     `OPENMANAGER_PROMPT_FILE=${promptTargetPath}`,
-    OPENCODE_IMAGE,
+    resolvedImage,
+    "opencode",
     "run",
-    await readFile(session.promptPath, "utf8"),
+    promptContent,
   ];
 
   const { stdout } = await execa("docker", runArgs, { cwd: PROJECT_ROOT });
   const containerId = stdout.trim();
 
   return { containerId };
-}
-
-async function ensureImageBuilt(): Promise<void> {
-  try {
-    await execa("docker", ["image", "inspect", OPENCODE_IMAGE], {
-      cwd: PROJECT_ROOT,
-    });
-  } catch {
-    await execa(
-      "docker",
-      ["build", "-f", DOCKERFILE_PATH, "-t", OPENCODE_IMAGE, PROJECT_ROOT],
-      {
-        cwd: PROJECT_ROOT,
-      },
-    );
-  }
 }

@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { randomUUID } from "node:crypto";
+import { nanoid } from "nanoid";
 
 import {
   prepareWorktree,
@@ -11,6 +11,8 @@ import { attachToSession, waitForContainer } from "../worker/terminal.ts";
 import type { PromptConfig, StartOptions } from "./options.ts";
 import type { SessionContext } from "./context.ts";
 import { cleanupSession } from "./cleanup.ts";
+import { ensureAgentImage } from "../worker/docker/image-builder.ts";
+import { PreSessionHookManager } from "../hooks/pre-session-hooks.ts";
 
 export async function startSession(options: StartOptions): Promise<void> {
   const session = await createSessionContext(options);
@@ -30,9 +32,14 @@ export async function startSession(options: StartOptions): Promise<void> {
     });
   }
 
+  session.dockerImage = await ensureAgentImage(options.dockerConfig);
+
+  await runPreSessionHooks(session, options);
+
   const { containerId } = await launchAgentContainer({
     session,
     nonInteractive: options.nonInteractive,
+    image: session.dockerImage,
   });
 
   try {
@@ -46,10 +53,47 @@ export async function startSession(options: StartOptions): Promise<void> {
   }
 }
 
+async function runPreSessionHooks(
+  session: SessionContext,
+  options: StartOptions,
+): Promise<void> {
+  if (!options.preSessionHooks.length) {
+    return;
+  }
+
+  const hookManager = new PreSessionHookManager();
+  console.log(
+    `Running pre-session hooks: ${options.preSessionHooks
+      .map((hook) => hook.name)
+      .join(", ")}`,
+  );
+
+  for (const invocation of options.preSessionHooks) {
+    const result = await hookManager.executeHook(
+      invocation.name,
+      session,
+      options.dockerConfig,
+      invocation.options ?? {},
+    );
+
+    const prefix = result.success ? "✓" : "✗";
+    const baseMessage = `${prefix} ${invocation.name}: ${result.message}`;
+
+    if (!result.success) {
+      throw new Error(baseMessage);
+    }
+
+    console.log(baseMessage);
+    if (result.data) {
+      console.log(JSON.stringify(result.data, null, 2));
+    }
+  }
+}
+
 async function createSessionContext(
   options: StartOptions,
 ): Promise<SessionContext> {
-  const sessionId = randomUUID();
+  const sessionId = nanoid();
   const sessionRoot = await ensureSessionRoot(options.repoPath, sessionId);
   const promptPath = await materializePrompt({
     prompt: options.prompt,

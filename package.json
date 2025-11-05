@@ -17,8 +17,7 @@
     "format": "run-s format:*",
     "format:eslint": "eslint --fix .",
     "format:prettier": "prettier --write .",
-    "dev": "node src/cli.ts",
-    "test:opencode": "docker build -t opencode -f docker/Dockerfile.opencode . && docker run -it --rm -v .:/openmanager opencode"
+    "dev": "node src/cli.ts"
   },
   "keywords": [
     "cli",
@@ -33,6 +32,7 @@
     "@tsconfig/node24": "^24.0.1",
     "commander": "^12.1.0",
     "execa": "^8.0.1",
+    "nanoid": "^5.0.7",
     "zod": "^3.23.8"
   },
   "devDependencies": {
