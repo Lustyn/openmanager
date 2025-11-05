@@ -4,7 +4,6 @@ import { readFile } from "node:fs/promises";
 
 import type { SessionContext } from "../session/context.ts";
 import {
-  DEFAULT_IMAGE,
   PROMPT_TARGET_DIR,
   PROJECT_ROOT,
   WORKTREE_TARGET,
@@ -13,7 +12,7 @@ import {
 interface LaunchAgentArgs {
   session: SessionContext;
   nonInteractive: boolean;
-  image?: string;
+  image: string;
 }
 
 interface LaunchResult {
@@ -28,7 +27,7 @@ export async function launchAgentContainer({
     throw new Error("Session worktree path is not set.");
   }
 
-  const resolvedImage = image ?? DEFAULT_IMAGE;
+  const resolvedImage = image;
   const containerName = `openmanager-session-${session.sessionId}`;
   const promptDir = dirname(session.promptPath);
   const promptFileName = basename(session.promptPath);

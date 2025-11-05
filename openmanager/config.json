@@ -1,17 +1,12 @@
 {
   "docker": {
-    "steps": [
-      "RUN corepack prepare pnpm@10.18.3 --activate"
-    ]
+    "steps": ["RUN corepack prepare pnpm@10.18.3 --activate"]
   },
   "preSessionHooks": [
     {
       "name": "install-node-deps",
       "options": {
-        "additionalArgs": [
-          "install",
-          "--frozen-lockfile"
-        ]
+        "additionalArgs": ["install", "--frozen-lockfile"]
       }
     }
   ]

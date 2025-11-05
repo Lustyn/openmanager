@@ -77,7 +77,9 @@ async function cleanupWorktrees(options: CleanupOptions): Promise<void> {
       .filter((entry) => entry.isDirectory())
       .map((entry) => resolve(worktreeRoot, entry.name));
   } catch {
-    console.log("No .openmanager/worktrees directory found. Nothing to clean up.");
+    console.log(
+      "No .openmanager/worktrees directory found. Nothing to clean up.",
+    );
     return;
   }
 

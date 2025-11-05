@@ -118,7 +118,7 @@ class CreatePatchHook implements SessionHook {
     const diff = diffResult.stdout.trim();
 
     // Reset the index to remove intent-to-add entries
-    await execa("git", ["reset"], {
+    await execa("git", ["reset", "--mixed"], {
       cwd: worktreePath,
     });
 

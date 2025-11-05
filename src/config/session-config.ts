@@ -3,7 +3,10 @@ import { resolve } from "node:path";
 
 import { z } from "zod";
 
-const CONFIG_LOCATIONS = ["openmanager/config.json", ".openmanager/config.json"];
+const CONFIG_LOCATIONS = [
+  "openmanager/config.json",
+  ".openmanager/config.json",
+];
 
 export interface HookInvocation {
   name: string;
@@ -41,7 +44,9 @@ const SessionConfigSchema = z
 
 const DEFAULT_SESSION_CONFIG: SessionConfig = {};
 
-export async function loadSessionConfig(repoPath: string): Promise<SessionConfig> {
+export async function loadSessionConfig(
+  repoPath: string,
+): Promise<SessionConfig> {
   for (const relativePath of CONFIG_LOCATIONS) {
     const configPath = resolve(repoPath, relativePath);
 

@@ -8,21 +8,16 @@ import type { DockerConfig } from "../../config/session-config.ts";
 import {
   DEFAULT_BASE_IMAGE,
   DEFAULT_BUILD_STEPS,
-  DEFAULT_IMAGE,
   PROJECT_ROOT,
+  WORKTREE_TARGET,
 } from "./shared.ts";
 const CACHE_ROOT = resolve(PROJECT_ROOT, ".openmanager", "cache", "docker");
 
 export async function ensureAgentImage(
   dockerConfig?: DockerConfig,
 ): Promise<string> {
-  if (!dockerConfig || isDefaultConfig(dockerConfig)) {
-    await ensureDefaultImageBuilt();
-    return DEFAULT_IMAGE;
-  }
-
-  const baseImage = dockerConfig.baseImage || DEFAULT_BASE_IMAGE;
-  const customSteps = dockerConfig.steps ?? [];
+  const baseImage = dockerConfig?.baseImage ?? DEFAULT_BASE_IMAGE;
+  const customSteps = dockerConfig?.steps ?? [];
   const instructions = buildInstructions(baseImage, customSteps);
   const dockerfileContent = `${instructions.join("\n")}\n`;
   const imageTag = computeImageTag(baseImage, customSteps);
@@ -32,28 +27,16 @@ export async function ensureAgentImage(
   }
 
   await buildImageFromContent(imageTag, dockerfileContent);
-
   return imageTag;
 }
 
-async function ensureDefaultImageBuilt(): Promise<void> {
-  if (await imageExists(DEFAULT_IMAGE)) {
-    return;
-  }
-
-  const instructions = buildInstructions(DEFAULT_BASE_IMAGE, []);
-  const dockerfileContent = `${instructions.join("\n")}\n`;
-  await buildImageFromContent(DEFAULT_IMAGE, dockerfileContent);
-}
-
-function isDefaultConfig(config: DockerConfig): boolean {
-  const hasBaseImage = Boolean(config.baseImage);
-  const hasSteps = Boolean(config.steps && config.steps.length > 0);
-  return !hasBaseImage && !hasSteps;
-}
-
 function buildInstructions(baseImage: string, customSteps: string[]): string[] {
-  return [`FROM ${baseImage}`, ...DEFAULT_BUILD_STEPS, ...customSteps];
+  return [
+    `FROM ${baseImage}`,
+    ...DEFAULT_BUILD_STEPS,
+    ...customSteps,
+    `WORKDIR ${WORKTREE_TARGET}`,
+  ];
 }
 
 async function buildImageFromContent(

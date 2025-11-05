@@ -7,10 +7,7 @@ import { z } from "zod";
 import type { DockerConfig } from "../config/session-config.ts";
 import type { SessionContext } from "../session/context.ts";
 import type { HookResult } from "./session-hooks.ts";
-import {
-  PROJECT_ROOT,
-  WORKTREE_TARGET,
-} from "../worker/docker/shared.ts";
+import { PROJECT_ROOT, WORKTREE_TARGET } from "../worker/docker/shared.ts";
 
 export interface PreSessionHook {
   name: string;
@@ -162,7 +159,11 @@ class RunCommandHook implements PreSessionHook {
       }
     }
 
-    dockerArgs.push(context.dockerImage, options.command, ...(options.args ?? []));
+    dockerArgs.push(
+      context.dockerImage,
+      options.command,
+      ...(options.args ?? []),
+    );
 
     const result = await execa("docker", dockerArgs, {
       cwd: PROJECT_ROOT,
