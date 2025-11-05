@@ -1,7 +1,7 @@
-import { cp, mkdir, stat } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { cp, mkdir, stat } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 
-import { execa } from 'execa';
+import { execa } from "execa";
 
 interface PrepareWorktreeArgs {
   repoPath: string;
@@ -9,14 +9,20 @@ interface PrepareWorktreeArgs {
   sessionId: string;
 }
 
-export async function prepareWorktree({ repoPath, gitRef, sessionId }: PrepareWorktreeArgs): Promise<string> {
-  const worktreeRoot = resolve(repoPath, '.openmanager', 'worktrees');
+export async function prepareWorktree({
+  repoPath,
+  gitRef,
+  sessionId,
+}: PrepareWorktreeArgs): Promise<string> {
+  const worktreeRoot = resolve(repoPath, ".openmanager", "worktrees");
   await mkdir(worktreeRoot, { recursive: true });
 
   const worktreePath = resolve(worktreeRoot, sessionId);
   await assertWorktreeDoesNotExist(worktreePath);
 
-  await execa('git', ['worktree', 'add', '--force', worktreePath, gitRef], { cwd: repoPath });
+  await execa("git", ["worktree", "add", "--force", worktreePath, gitRef], {
+    cwd: repoPath,
+  });
   return worktreePath;
 }
 
@@ -27,7 +33,7 @@ interface SyncLocalChangesArgs {
 
 export async function syncLocalChangesIntoWorktree({
   repoPath,
-  worktreePath
+  worktreePath,
 }: SyncLocalChangesArgs): Promise<void> {
   await applyTrackedChanges({ repoPath, worktreePath });
   await copyUntrackedFiles({ repoPath, worktreePath });
@@ -37,37 +43,45 @@ async function assertWorktreeDoesNotExist(worktreePath: string): Promise<void> {
   try {
     await stat(worktreePath);
   } catch (error: unknown) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return;
     }
     throw error;
   }
 
-  throw new Error(`Worktree path ${worktreePath} already exists. Remove it or choose a different session ID.`);
+  throw new Error(
+    `Worktree path ${worktreePath} already exists. Remove it or choose a different session ID.`,
+  );
 }
 
 async function applyTrackedChanges({
   repoPath,
-  worktreePath
+  worktreePath,
 }: SyncLocalChangesArgs): Promise<void> {
-  const { stdout } = await execa('git', ['diff', '--binary', 'HEAD'], { cwd: repoPath });
+  const { stdout } = await execa("git", ["diff", "--binary", "HEAD"], {
+    cwd: repoPath,
+  });
   if (!stdout.trim()) {
     return;
   }
 
-  await execa('git', ['apply', '--binary', '--whitespace=nowarn'], {
+  await execa("git", ["apply", "--binary", "--whitespace=nowarn"], {
     cwd: worktreePath,
-    input: stdout
+    input: stdout,
   });
 }
 
 async function copyUntrackedFiles({
   repoPath,
-  worktreePath
+  worktreePath,
 }: SyncLocalChangesArgs): Promise<void> {
-  const { stdout } = await execa('git', ['ls-files', '--others', '--exclude-standard'], { cwd: repoPath });
+  const { stdout } = await execa(
+    "git",
+    ["ls-files", "--others", "--exclude-standard"],
+    { cwd: repoPath },
+  );
   const files = stdout
-    .split('\n')
+    .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
 

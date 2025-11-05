@@ -1,10 +1,9 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
-import { fileURLToPath } from "url";
 
-import { createStartCommand } from "./commands/start.js";
-import { loadPackageMetadata } from "./config/package.js";
+import { createStartCommand } from "./commands/start.ts";
+import { loadPackageMetadata } from "./config/package.ts";
 
 export async function buildCli(program = new Command()): Promise<Command> {
   const pkg = await loadPackageMetadata();

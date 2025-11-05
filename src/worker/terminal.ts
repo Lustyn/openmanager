@@ -1,8 +1,8 @@
 import { execa } from "execa";
 
 export async function attachToSession(containerId: string): Promise<void> {
-  const subprocess = execa('docker', ['attach', containerId], {
-    stdio: 'inherit'
+  const subprocess = execa("docker", ["attach", containerId], {
+    stdio: "inherit",
   });
 
   try {
@@ -14,7 +14,7 @@ export async function attachToSession(containerId: string): Promise<void> {
         : undefined;
     if (exitCode !== undefined) {
       throw new Error(
-        `Failed to attach to container ${containerId} (exit code ${exitCode}).`
+        `Failed to attach to container ${containerId} (exit code ${exitCode}).`,
       );
     }
     throw error;
@@ -23,8 +23,8 @@ export async function attachToSession(containerId: string): Promise<void> {
 
 export async function waitForContainer(containerId: string): Promise<void> {
   try {
-    await execa('docker', ['wait', containerId], {
-      stdio: 'inherit'
+    await execa("docker", ["wait", containerId], {
+      stdio: "inherit",
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

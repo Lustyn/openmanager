@@ -1,4 +1,4 @@
-import { PromptConfig } from './options.js';
+import type { PromptConfig } from "./options.ts";
 
 export interface SessionContext {
   sessionId: string;

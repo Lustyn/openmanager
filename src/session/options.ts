@@ -4,16 +4,13 @@ import { cwd } from "node:process";
 
 import { z } from "zod";
 
-import type { PatchOptions, PrOptions } from "../hooks/session-hooks.js";
+import type { PatchOptions, PrOptions } from "../hooks/session-hooks.ts";
 
 export type PromptConfig =
   | { kind: "file"; path: string }
   | { kind: "text"; content: string };
 
-export const DEFAULT_POST_SESSION_HOOKS = [
-  "create-patch",
-  "prune-worktree"
-];
+export const DEFAULT_POST_SESSION_HOOKS = ["create-patch", "prune-worktree"];
 
 export interface StartOptions {
   repoPath: string;
@@ -55,7 +52,7 @@ function resolveRepoPath(value: string | undefined): string {
 
 async function ensurePromptFileExists(
   promptFile: string,
-  repoPath: string
+  repoPath: string,
 ): Promise<string> {
   const fullPath = resolve(repoPath, promptFile);
   await access(fullPath, constants.R_OK);
@@ -69,13 +66,13 @@ function ensurePromptChoice(promptFile?: string, promptText?: string): void {
 
   if (!promptFile && !promptText) {
     throw new Error(
-      "An initial prompt is required. Provide --prompt-file or --prompt-text."
+      "An initial prompt is required. Provide --prompt-file or --prompt-text.",
     );
   }
 }
 
 export async function parseStartOptions(
-  raw: Record<string, unknown>
+  raw: Record<string, unknown>,
 ): Promise<StartOptions> {
   const parsed = RawOptionsSchema.parse(raw);
 
@@ -95,7 +92,10 @@ export async function parseStartOptions(
       : undefined;
 
   const prOptions: PrOptions | undefined =
-    parsed.prTitle || parsed.prDescription || parsed.prBranchPrefix || parsed.prAutoPush !== undefined
+    parsed.prTitle ||
+    parsed.prDescription ||
+    parsed.prBranchPrefix ||
+    parsed.prAutoPush !== undefined
       ? {
           title: parsed.prTitle,
           description: parsed.prDescription,
@@ -112,7 +112,7 @@ export async function parseStartOptions(
   if (parsed.promptFile) {
     const promptFilePath = await ensurePromptFileExists(
       parsed.promptFile,
-      repoPath
+      repoPath,
     );
     return {
       repoPath,

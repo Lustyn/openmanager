@@ -1,12 +1,12 @@
-import { SessionHookManager } from "../hooks/session-hooks.js";
-import { SessionContext } from "./context.js";
-import { StartOptions } from "./options.js";
+import { SessionHookManager } from "../hooks/session-hooks.ts";
+import type { SessionContext } from "./context.ts";
+import type { StartOptions } from "./options.ts";
 
 const DEFAULT_HOOKS = ["prune-worktree"];
 
 export async function cleanupSession(
   context: SessionContext,
-  options: StartOptions
+  options: StartOptions,
 ): Promise<void> {
   const hookManager = new SessionHookManager();
   const hooks = options.postSessionHooks.length
@@ -27,7 +27,7 @@ export async function cleanupSession(
     const result = await hookManager.executeHook(
       hookName,
       context,
-      hookOptions
+      hookOptions,
     );
 
     const prefix = result.success ? "✓" : "✗";

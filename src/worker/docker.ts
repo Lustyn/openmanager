@@ -1,9 +1,9 @@
-import { execa } from 'execa';
-import { basename, dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { readFile } from 'node:fs/promises';
+import { execa } from "execa";
+import { basename, dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { readFile } from "node:fs/promises";
 
-import { SessionContext } from '../session/context.js';
+import type { SessionContext } from "../session/context.ts";
 
 interface LaunchAgentArgs {
   session: SessionContext;
@@ -16,17 +16,19 @@ interface LaunchResult {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const PROJECT_ROOT = resolve(__dirname, '../../');
-const DOCKERFILE_PATH = resolve(PROJECT_ROOT, 'docker', 'Dockerfile.opencode');
-const OPENCODE_IMAGE = 'openmanager/opencode:latest';
-const WORKTREE_TARGET = '/openmanager/worktree';
-const PROMPT_TARGET_DIR = '/openmanager/prompt';
+const PROJECT_ROOT = resolve(__dirname, "../../");
+const DOCKERFILE_PATH = resolve(PROJECT_ROOT, "docker", "Dockerfile.opencode");
+const OPENCODE_IMAGE = "openmanager/opencode:latest";
+const WORKTREE_TARGET = "/openmanager/worktree";
+const PROMPT_TARGET_DIR = "/openmanager/prompt";
 
-export async function launchAgentContainer({ session }: LaunchAgentArgs): Promise<LaunchResult> {
+export async function launchAgentContainer({
+  session,
+}: LaunchAgentArgs): Promise<LaunchResult> {
   await ensureImageBuilt();
 
   if (!session.worktreePath) {
-    throw new Error('Session worktree path is not set.');
+    throw new Error("Session worktree path is not set.");
   }
 
   const containerName = `openmanager-session-${session.sessionId}`;
@@ -34,38 +36,38 @@ export async function launchAgentContainer({ session }: LaunchAgentArgs): Promis
   const promptFileName = basename(session.promptPath);
   const promptTargetPath = `${PROMPT_TARGET_DIR}/${promptFileName}`;
 
-  const promptContent = await readFile(session.promptPath, 'utf8');
+  const promptContent = await readFile(session.promptPath, "utf8");
 
   const runArgs = [
-    'run',
-    '--detach',
-    '--rm',
-    '--name',
+    "run",
+    "--detach",
+    "--rm",
+    "--name",
     containerName,
-    '--label',
+    "--label",
     `openmanager.session=${session.sessionId}`,
-    '--workdir',
+    "--workdir",
     WORKTREE_TARGET,
-    '--mount',
+    "--mount",
     `type=bind,src=${session.worktreePath},dst=${WORKTREE_TARGET}`,
-    '--mount',
+    "--mount",
     `type=bind,src=${promptDir},dst=${PROMPT_TARGET_DIR},ro`,
-    '-e',
+    "-e",
     `OPENMANAGER_SESSION_ID=${session.sessionId}`,
-    '-e',
+    "-e",
     `OPENMANAGER_AGENT_ID=${session.agentId}`,
-    '-e',
+    "-e",
     `OPENMANAGER_REPO_PATH=${session.repoPath}`,
-    '-e',
+    "-e",
     `OPENMANAGER_WORKTREE=${WORKTREE_TARGET}`,
-    '-e',
+    "-e",
     `OPENMANAGER_PROMPT_FILE=${promptTargetPath}`,
     OPENCODE_IMAGE,
-    'run',
-    promptContent
+    "run",
+    promptContent,
   ];
 
-  const { stdout } = await execa('docker', runArgs, { cwd: PROJECT_ROOT });
+  const { stdout } = await execa("docker", runArgs, { cwd: PROJECT_ROOT });
   const containerId = stdout.trim();
 
   return { containerId };
@@ -73,10 +75,16 @@ export async function launchAgentContainer({ session }: LaunchAgentArgs): Promis
 
 async function ensureImageBuilt(): Promise<void> {
   try {
-    await execa('docker', ['image', 'inspect', OPENCODE_IMAGE], { cwd: PROJECT_ROOT });
-  } catch (error) {
-    await execa('docker', ['build', '-f', DOCKERFILE_PATH, '-t', OPENCODE_IMAGE, PROJECT_ROOT], {
-      cwd: PROJECT_ROOT
+    await execa("docker", ["image", "inspect", OPENCODE_IMAGE], {
+      cwd: PROJECT_ROOT,
     });
+  } catch {
+    await execa(
+      "docker",
+      ["build", "-f", DOCKERFILE_PATH, "-t", OPENCODE_IMAGE, PROJECT_ROOT],
+      {
+        cwd: PROJECT_ROOT,
+      },
+    );
   }
 }

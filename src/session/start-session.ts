@@ -5,12 +5,12 @@ import { randomUUID } from "node:crypto";
 import {
   prepareWorktree,
   syncLocalChangesIntoWorktree,
-} from "../worktree/prepare.js";
-import { launchAgentContainer } from "../worker/docker.js";
-import { attachToSession, waitForContainer } from "../worker/terminal.js";
-import { PromptConfig, StartOptions } from "./options.js";
-import { SessionContext } from "./context.js";
-import { cleanupSession } from "./cleanup.js";
+} from "../worktree/prepare.ts";
+import { launchAgentContainer } from "../worker/docker.ts";
+import { attachToSession, waitForContainer } from "../worker/terminal.ts";
+import type { PromptConfig, StartOptions } from "./options.ts";
+import type { SessionContext } from "./context.ts";
+import { cleanupSession } from "./cleanup.ts";
 
 export async function startSession(options: StartOptions): Promise<void> {
   const session = await createSessionContext(options);
@@ -47,7 +47,7 @@ export async function startSession(options: StartOptions): Promise<void> {
 }
 
 async function createSessionContext(
-  options: StartOptions
+  options: StartOptions,
 ): Promise<SessionContext> {
   const sessionId = randomUUID();
   const sessionRoot = await ensureSessionRoot(options.repoPath, sessionId);
@@ -90,7 +90,7 @@ async function materializePrompt({
 
 async function ensureSessionRoot(
   repoPath: string,
-  sessionId: string
+  sessionId: string,
 ): Promise<string> {
   const sessionRoot = resolve(repoPath, ".openmanager", "sessions", sessionId);
   await mkdir(sessionRoot, { recursive: true });

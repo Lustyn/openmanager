@@ -4,19 +4,20 @@
   "description": "CLI manager for launching sandboxed coding agent sessions in Docker",
   "type": "module",
   "bin": {
-    "openmanager": "dist/cli.js"
+    "openmanager": "dist/cli.ts"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "clean": "rimraf dist",
-    "dev": "tsx src/cli.ts",
-    "lint": "eslint \"src/**/*.ts\"",
-    "prepare": "pnpm run build",
-    "test": "vitest",
-    "test:opencode": "docker build -f docker/Dockerfile.opencode -t opencode-test . && docker run --rm opencode-test --help"
+    "build": "tsc",
+    "lint": "run-s lint:*",
+    "lint:eslint": "eslint .",
+    "lint:prettier": "prettier .",
+    "format": "run-s format:*",
+    "format:eslint": "eslint --fix .",
+    "format:prettier": "prettier --write .",
+    "dev": "node src/cli.ts"
   },
   "keywords": [
     "cli",
@@ -28,17 +29,19 @@
   "license": "MIT",
   "packageManager": "pnpm@10.18.3",
   "dependencies": {
-    "@iarna/toml": "^2.2.5",
+    "@tsconfig/node24": "^24.0.1",
     "commander": "^12.1.0",
     "execa": "^8.0.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/node": "^22.5.4",
-    "eslint": "^9.12.0",
+    "eslint": "^9.39.1",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
-    "tsx": "^4.16.2",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.1"
+    "typescript-eslint": "^8.46.3"
   }
 }
